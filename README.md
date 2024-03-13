@@ -1,3 +1,14 @@
+**The README.md file provides educational documentation on utilizing the airmon-ng tool within Kali Linux for WiFi monitoring and manipulation. It outlines a series of commands tailored for educational purposes, guiding users through the process of initiating monitor mode, capturing packets, and performing targeted attacks such as deauthentication. Each command is accompanied by a brief explanation, ensuring clarity and comprehension for users unfamiliar with these tools.**
+
+**The documentation emphasizes the educational nature of the content and underscores the importance of obtaining proper authorization before attempting any actions. Additionally, it includes examples to illustrate the usage of each command, aiding users in understanding the practical application of the provided instructions.**
+
+
+**This README serves as a valuable resource for individuals interested in learning about WiFi security and penetration testing using Kali Linux. It empowers users with foundational knowledge and practical insights while promoting ethical and responsible use of these tools for educational purposes.**
+
+
+
+
+
 ## Kali Linux WiFi Attack Commands
 1. `ifconfig`
 2. `iwconfig`
