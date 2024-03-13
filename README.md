@@ -1,4 +1,4 @@
-## Kali Linux WiFi Information Commands
+## Kali Linux WiFi Attack Commands
 1. `ifconfig`
 2. `iwconfig`
 3. `airmon-ng start wlan0` (replace `wlan0` with your device name)
