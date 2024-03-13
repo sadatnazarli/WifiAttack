@@ -23,3 +23,6 @@
 - `aireplay-ng --deauth <#packets> -a <AP> -c <target> <interface>`
 
   Example: `aireplay-ng --deauth 1000 -a 10:20:30:40 -c 00:AA:11:BB mon0`
+
+
+Remember, unauthorized use of these commands for network intrusion or any unethical activities may be illegal. Always obtain proper authorization before conducting any penetration testing or security research. These commands are for educational purposes to understand the basics of WiFi monitoring and manipulation.
