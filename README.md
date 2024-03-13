@@ -1,9 +1,10 @@
 ## Kali Linux WiFi Attack Commands
 1. `ifconfig`
 2. `iwconfig`
-3. `airmon-ng start wlan0` (replace `wlan0` with your device name)
-4. `airodump-ng wlan0` - Shows all networks around
-5. `airodump-ng --channel 8 --bssid [MAC address] wlan0mon` - Shows devices connected to the selected WiFi network
+## Start the Wireless Interface in Monitor Mode
+4. `airmon-ng start wlan0` (replace `wlan0` with your device name)
+5. `airodump-ng wlan0` - Shows all networks around
+6. `airodump-ng --channel 8 --bssid [MAC address] wlan0mon` - Shows devices connected to the selected WiFi network
 
 ## AIRODUMP-NG
 
